@@ -121,6 +121,9 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
   box-shadow:0 2px 16px var(--glow);animation:fadeUp 0.8s ease both;
 }
 .hero-cake{font-size:clamp(4rem,14vw,8rem);animation:cakeBounce 1.2s ease both,wobble 3s 2s ease-in-out infinite;}
+.hero-title {
+    white-space: pre-line;
+}
 @keyframes cakeBounce{0%{transform:scale(0) translateY(50px);opacity:0}70%{transform:scale(1.12) translateY(-12px)}100%{transform:scale(1) translateY(0);opacity:1}}
 @keyframes wobble{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
 .hero-title{
@@ -798,7 +801,7 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
 <div id="heroPage">
   <div class="hero-badge">🎀 A Very Special Day Because My Sister Was Born Today </div>
   <div class="hero-cake">🎂</div>
-  <h1 class="hero-title">Happy Birthday,<br>My Dearest, Most Beloved Sister!</h1>
+  <h1 class="hero-title">Happy Birthday,<br>My Dearest & Cutest Sister💖</h1>
   <p class="hero-sub">For The Most Beautiful, Kind, and Amazing Person I Know ✨</p>
   <button class="hero-gift-btn" id="heroGiftBtn" onclick="startGiftReveal()">
     <span class="gift-btn-icon">🎁</span>
@@ -1015,7 +1018,7 @@ const themeData = {
   't-peach': {
     name: 'Peach & Rose',
     cardFrontBg: 'linear-gradient(145deg,#c05030,#8a2a10)',
-    cardFrontEmoji: '🌻', cardFrontTitle: 'Happy Birthday,\nMy Sunshine!',
+    cardFrontEmoji: '🌻', cardFrontTitle: 'Happy Birthday,\nMy Brightest Sunshine!',
     cardFrontSub: 'Bright like a sunlight, filling every day with warmth and joy',
     cardBackFlowers: '🌻 🌼 🌸',
     cardBackQuote: '"Like sunflowers turning to the sun, I will always turn towards you."',
@@ -1034,7 +1037,7 @@ const themeData = {
   't-colorful': {
     name: 'Colorful & Vibrant',
     cardFrontBg: 'linear-gradient(145deg,#0e7490,#0c4a6e)',
-    cardFrontEmoji: '🎉', cardFrontTitle: 'HAPPY BIRTHDAY\nMy Pookie💕!!',
+    cardFrontEmoji: '🎉', cardFrontTitle: 'HAPPY BIRTHDAY,\nMy Beloved Pookie💕!!',
     cardFrontSub: 'A burst of joy, colour, and love for the most amazing sister in the world!',
     cardBackFlowers: '🌈 🎊 🌸',
     cardBackQuote: '"You are like the confetti, colourful, joyful, and too beautiful to contain!"',
@@ -1145,6 +1148,7 @@ window.addEventListener('load',()=>setTimeout(launchConfetti,700));
 // ══════════════════════════════════════════════════════
 //  THEME SWITCHER
 // ══════════════════════════════════════════════════════
+var herotitle=document.querySelector('.hero-title');
 document.querySelectorAll('.theme-dot').forEach(dot=>{
   dot.addEventListener('click',()=>{
     currentTheme=dot.dataset.theme;
@@ -1157,6 +1161,10 @@ document.querySelectorAll('.theme-dot').forEach(dot=>{
     if(document.getElementById('giftOverlay').classList.contains('active') && currentGift===3){
       setTimeout(()=>buildCardContent('modal-card-scene'),50);
     }
+    herotitle.textContent = currentTheme === 't-colorful' ? 'HAPPY BIRTHDAY,\nMy Beloved Pookie💕!!' :
+                        currentTheme === 't-purple' ? 'Happy Birthday,\nMy Charming Star✨' :
+                        currentTheme === 't-peach' ? 'Happy Birthday,\nMy Brightest Sunshine🌻' :
+                        'Happy Birthday,\nMy Dearest & Cutest Sister💖';
   });
 });
 

@@ -367,6 +367,217 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
 .fp-title{font-family:'Dancing Script',cursive;font-size:1.6rem;color:#fff;}
 .fp-body{padding:36px 26px;max-width:680px;margin:0 auto;}
 
+/* ══════ BALLOON GIFT ══════ */
+.balloon-intro{
+  text-align:center;font-family:'Dancing Script',cursive;font-size:1.3rem;
+  color:var(--primary);margin-bottom:28px;opacity:0.85;
+}
+.balloon-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:24px;
+  justify-items:center;
+}
+
+/* ── Single balloon cell ── */
+.balloon-cell{
+  display:flex;flex-direction:column;align-items:center;
+  cursor:pointer;position:relative;
+  width:130px;
+}
+.balloon-fly{
+  display:flex;flex-direction:column;align-items:center;
+  width:100%;
+  opacity:0;
+  transform:translateY(110px);
+  transition:opacity 0.65s cubic-bezier(0.34,1.56,0.64,1),
+             transform 0.65s cubic-bezier(0.34,1.56,0.64,1);
+}
+.balloon-cell.flown-in .balloon-fly{opacity:1;transform:translateY(0);}
+.balloon-cell.is-popped .balloon-fly{transition:opacity 0.3s,transform 0.3s;}
+
+/* The balloon SVG container */
+.balloon-body{
+  position:relative;width:90px;height:110px;
+  transition:transform 0.18s;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,0.18));
+  animation:balloonFloat var(--float-dur,3s) var(--float-delay,0s) ease-in-out infinite alternate;
+}
+.balloon-cell:hover .balloon-body{transform:scale(1.08);}
+.balloon-svg{width:100%;height:100%;}
+.balloon-string{
+  width:2px;height:36px;
+  background:linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.06));
+  border-radius:2px;margin-top:-2px;
+}
+.balloon-label{
+  font-family:'Dancing Script',cursive;font-size:0.85rem;
+  color:var(--text2);margin-top:4px;opacity:0.7;
+}
+
+@keyframes balloonFloat{
+  0%{transform:translateY(0) rotate(-3deg);}
+  100%{transform:translateY(-12px) rotate(3deg);}
+}
+/* ── Modal balloon bunch scene ── */
+.balloon-scene{
+  width:100%;height:300px;position:relative;overflow:hidden;
+  border-radius:20px;
+  background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);
+  border:1.5px solid var(--secondary);
+  box-shadow:0 6px 28px var(--glow);
+  margin-bottom:20px;
+}
+.balloon-bunch-wrap{
+  position:absolute;bottom:10px;left:50%;
+  transform:translateX(-50%);
+  animation:bunchFloat 3.5s ease-in-out infinite alternate;
+  width:500px;height:290px;
+}
+@keyframes bunchFloat{
+  0%{transform:translateX(-50%) translateY(0);}
+  100%{transform:translateX(-50%) translateY(-18px);}
+}
+.scene-cloud{
+  position:absolute;
+  background:rgba(255,255,255,0.5);
+  border-radius:50px;
+  animation:cloudDrift linear infinite;
+}
+@keyframes cloudDrift{
+  0%{left:-140px;}
+  100%{left:calc(100% + 140px);}
+}
+
+/* POP animation */
+.balloon-cell.popping .balloon-body{
+  animation:balloonPop 0.35s forwards cubic-bezier(0.36,0.07,0.19,0.97);
+}
+@keyframes balloonPop{
+  0%{transform:scale(1);opacity:1;}
+  40%{transform:scale(1.3);opacity:1;}
+  100%{transform:scale(0);opacity:0;}
+}
+
+/* ── Photo card that replaces balloon ── */
+.balloon-photo-card{
+  width:130px;
+  perspective:900px;
+  cursor:pointer;
+}
+.bpc-inner{
+  width:130px;height:160px;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform 0.7s cubic-bezier(0.645,0.045,0.355,1);
+}
+.balloon-photo-card.flipped .bpc-inner{
+  transform:rotateY(180deg);
+}
+.bpc-front,.bpc-back{
+  position:absolute;inset:0;
+  border-radius:14px;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  overflow:hidden;
+}
+.bpc-front{
+  background:var(--card);
+  border:2px solid var(--secondary);
+  box-shadow:0 6px 24px var(--glow);
+}
+.bpc-front img{
+  width:100%;height:100%;object-fit:cover;display:block;
+}
+.bpc-front-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,0.45));
+  display:flex;align-items:flex-end;padding:8px;
+}
+.bpc-front-overlay span{
+  font-size:9px;letter-spacing:0.15em;text-transform:uppercase;
+  color:rgba(255,255,255,0.8);font-family:'DM Sans',sans-serif;
+}
+.bpc-back{
+  background:linear-gradient(145deg,var(--bg2),var(--card));
+  border:2px solid var(--secondary);
+  box-shadow:0 6px 24px var(--glow);
+  transform:rotateY(180deg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px 10px;text-align:center;
+  gap:6px;
+}
+.bpc-back-emoji{font-size:1.5rem;}
+.bpc-back-msg{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:0.75rem;line-height:1.6;color:var(--text2);
+}
+.bpc-back-sig{
+  font-family:'Dancing Script',cursive;font-size:0.9rem;
+  color:var(--primary);margin-top:4px;
+}
+.bpc-hint{
+  font-size:8px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text2);opacity:0.5;margin-top:4px;text-align:center;
+}
+
+/* Pop particles */
+.pop-particle{
+  position:fixed;pointer-events:none;border-radius:50%;
+  animation:popParticle 0.7s forwards ease-out;
+  z-index:9998;
+}
+@keyframes popParticle{
+  0%{transform:scale(1) translate(0,0);opacity:1;}
+  100%{transform:scale(0) translate(var(--tx),var(--ty));opacity:0;}
+}
+
+/* All popped message */
+.all-popped-msg{
+  display:none;text-align:center;margin-top:32px;
+  padding:28px 20px;
+  background:var(--card);border:1.5px solid var(--secondary);
+  border-radius:20px;box-shadow:0 6px 32px var(--glow);
+}
+.all-popped-msg.show{display:block;animation:fadeUp 0.6s ease both;}
+
+/* Lightbox */
+#balloonLightbox{
+  position:fixed;inset:0;z-index:4000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+#balloonLightbox.active{opacity:1;pointer-events:all;}
+.blb-backdrop{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,0.75);backdrop-filter:blur(12px);
+}
+.blb-card{
+  position:relative;z-index:1;
+  background:var(--bg);border:2px solid var(--secondary);
+  border-radius:24px;overflow:hidden;
+  max-width:480px;width:92%;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5);
+  transform:scale(0.88);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+#balloonLightbox.active .blb-card{transform:scale(1);}
+.blb-close{
+  position:absolute;top:12px;right:12px;z-index:2;
+  background:rgba(255,255,255,0.2);border:none;
+  width:30px;height:30px;border-radius:50%;
+  font-size:0.9rem;cursor:pointer;color:var(--text);
+  backdrop-filter:blur(6px);transition:background 0.2s;
+}
+.blb-close:hover{background:rgba(255,255,255,0.4);}
+.blb-img{width:100%;max-height:300px;object-fit:cover;display:block;}
+.blb-content{padding:22px 24px;}
+.blb-emoji{font-size:1.8rem;margin-bottom:6px;}
+.blb-msg{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.05rem;line-height:1.85;color:var(--text2);margin-bottom:10px;
+}
+.blb-sig{font-family:'Dancing Script',cursive;font-size:1.2rem;color:var(--primary);}
+
 /* ══════ GOODBYE ══════ */
 #goodbyeOverlay{
   position:fixed;inset:0;z-index:2000;
@@ -577,6 +788,7 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
   <div class="sidebar-icon" id="si-3" onclick="openFullpage(3)">🎴<span class="tip">Special Birthday Card 🎴 for my Bunu 💖</span></div>
   <div class="sidebar-icon" id="si-4" onclick="openFullpage(4)">💐<span class="tip">Bouquet of Flowers 💐 for my Dearest 💖</span></div>
   <div class="sidebar-icon" id="si-5" onclick="openFullpage(5)">🌸<span class="tip">A Special Garden For my Flower 🌸</span></div>
+  <div class="sidebar-icon" id="si-6" onclick="openFullpage(6)">🎈<span class="tip">Special Memory Balloons 🎈 Pop to Reveal!</span></div>
 </div>
 
 <!-- Pack Button -->
@@ -600,13 +812,13 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
     <div class="gm-header">
       <h3 id="gmTitle">🎁 Gift</h3>
       <div style="display:flex;align-items:center;gap:8px;">
-        <div class="gm-badge" id="gmBadge">1 of 6</div>
+        <div class="gm-badge" id="gmBadge">1 of 8</div>
         <button class="gm-close" onclick="closeGiftOverlay()">✕</button>
       </div>
     </div>
     <div class="gm-body" id="gmBody"></div>
     <div class="gm-footer">
-      <span class="gm-counter" id="gmCounter">Gift 1 of 6</span>
+      <span class="gm-counter" id="gmCounter">Gift 1 of 8</span>
       <div style="display:flex;gap:10px;">
         <button class="gm-btn sec" id="prevBtn" onclick="prevGift()"> Previous Gift 🎁</button>
         <button class="gm-btn" id="nextBtn" onclick="nextGift()">Next Gift 🎁</button>
@@ -638,9 +850,9 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
     <div class="poem-stanza">So today I want celebrate the wonder,<br>The most incredible sister and my favourite person.<br>Happy Birthday, my dear — may your day be bright. 🌸</div> 
 
 
-    <div class="poem-stanza">You are the sunshine on a cloudy day,<br>The kind of magic that takes your breath away.<br>A soul so gentle, a heart so pure,<br>Of your grace and beauty, I am always sure.</div>
+    <!-- <div class="poem-stanza">You are the sunshine on a cloudy day,<br>The kind of magic that takes your breath away.<br>A soul so gentle, a heart so pure,<br>Of your grace and beauty, I am always sure.</div>
     <div class="poem-stanza">You dance through life with elegant ease,<br>A warm spring wind, a soft summer breeze.<br>In every laugh, in every tear,<br>You make everything feel better, my dear.</div>
-    <div class="poem-stanza">So today I celebrate the wonder that is you,<br>The most incredible sister the world ever knew.<br>Happy Birthday, my love — may your day be bright,<br>You are my favourite person, my constant light. 🌸</div>
+    <div class="poem-stanza">So today I celebrate the wonder that is you,<br>The most incredible sister the world ever knew.<br>Happy Birthday, my love — may your day be bright,<br>You are my favourite person, my constant light. 🌸</div> -->
   </div></div>
 </div>
 <!-- 2: Reasons -->
@@ -685,6 +897,34 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
     <div class="poem-wrap">
       <div class="poem-stanza">In a garden blooming just for you,<br>every flower holds a wish come true.<br>May your life be filled with colour bright,<br>and every day a pure delight. 🌸</div>
     </div>
+  </div>
+</div>
+
+<!-- 6: ══════ BALLOON MEMORY GIFT ══════ -->
+<div class="fullpage-view" id="fp-6">
+  <div class="fp-header">
+    <button class="fp-back" onclick="closeFullpage()">←</button>
+    <div class="fp-title">Special Memory Balloons 🎈 Pop to Reveal!</div>
+  </div>
+  <div class="fp-body">
+    <div class="balloon-intro">Click to pop the balloons 🎈 and reveal the memory 💕</div>
+    <div class="balloon-grid" id="balloonGrid"></div>
+    <div class="all-popped-msg" id="allPoppedMsg">
+      <div class="all-popped-inner">
+        <div style="font-size:2.5rem;margin-bottom:10px;">🎉</div>
+        <div style="font-family:'Great Vibes',cursive;font-size:2rem;color:var(--primary);">All memories revealed!</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text2);margin-top:8px;">Click the photo to view it up close 💕</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Balloon photo lightbox -->
+<div id="balloonLightbox">
+  <div class="blb-backdrop" onclick="closeLightbox()"></div>
+  <div class="blb-card">
+    <button class="blb-close" onclick="closeLightbox()">✕</button>
+    <div class="blb-inner" id="blbInner"></div>
   </div>
 </div>
 
@@ -775,7 +1015,7 @@ const themeData = {
   't-peach': {
     name: 'Peach & Rose',
     cardFrontBg: 'linear-gradient(145deg,#c05030,#8a2a10)',
-    cardFrontEmoji: '🌻', cardFrontTitle: 'Happy Birthday,\nSunshine!',
+    cardFrontEmoji: '🌻', cardFrontTitle: 'Happy Birthday,\nMy Sunshine!',
     cardFrontSub: 'Bright like a sunlight, filling every day with warmth and joy',
     cardBackFlowers: '🌻 🌼 🌸',
     cardBackQuote: '"Like sunflowers turning to the sun, I will always turn towards you."',
@@ -794,7 +1034,7 @@ const themeData = {
   't-colorful': {
     name: 'Colorful & Vibrant',
     cardFrontBg: 'linear-gradient(145deg,#0e7490,#0c4a6e)',
-    cardFrontEmoji: '🎉', cardFrontTitle: 'HAPPY BIRTHDAY\nPookie💕!!',
+    cardFrontEmoji: '🎉', cardFrontTitle: 'HAPPY BIRTHDAY\nMy Pookie💕!!',
     cardFrontSub: 'A burst of joy, colour, and love for the most amazing sister in the world!',
     cardBackFlowers: '🌈 🎊 🌸',
     cardBackQuote: '"You are like the confetti, colourful, joyful, and too beautiful to contain!"',
@@ -815,8 +1055,8 @@ const themeData = {
 // ══════════════════════════════════════════════════════
 //  STATE
 // ══════════════════════════════════════════════════════
-const TOTAL_GIFTS = 7;
-const giftTitles = ['A Sweet Letter 💌 for my Beloved Sister 💖','A Short Poem 📜 for my Angel 💖','Some of the many Reasons why I Love You 💖','Special Birthday Card 🎴 for my Bunu 💖','Bouquet of Flowers 💐 for my Dearest 💖','A Special Garden For my Flower 🌸','With all my love 💖'];
+const TOTAL_GIFTS = 8;
+const giftTitles = ['A Sweet Letter 💌 for my Beloved Sister 💖','A Short Poem 📜 for my Angel 💖','Some of the many Reasons why I Love You 💖','Special Birthday Card 🎴 for my Bunu 💖','Bouquet of Flowers 💐 for my Dearest 💖','A Special Garden For my Flower 🌸','Special Memory Balloons🎈 Pop to Reveal!','With all my love 💖'];
 let currentGift = 0;
 let unlockedGifts = [];
 let allGiftsUnlocked = false;
@@ -988,6 +1228,57 @@ function buildGardenFlowers(elId){
 // ══════════════════════════════════════════════════════
 //  MODAL GIFT CONTENT (inline)
 // ══════════════════════════════════════════════════════
+function buildBalloonSceneHTML(){
+  const pos=[
+    {x:-160,y:-195,rot:-26,dur:3.2,del:0},
+    {x:-110,y:-238,rot:-17,dur:2.9,del:0.15},
+    {x: -60,y:-262,rot: -9,dur:3.5,del:0.3},
+    {x: -12,y:-272,rot: -3,dur:2.7,del:0.1},
+    {x:  36,y:-274,rot:  2,dur:3.3,del:0.25},
+    {x:  84,y:-266,rot:  9,dur:2.8,del:0.05},
+    {x: 130,y:-248,rot: 17,dur:3.6,del:0.35},
+    {x: 175,y:-218,rot: 25,dur:3.1,del:0.2},
+    {x:   8,y:-230,rot:  0,dur:2.6,del:0.4},
+  ];
+  const strings=pos.map(p=>{
+    const bx=p.x+45,by=p.y+90,cx=bx*0.35,cy=by*0.55;
+    return `<path d="M0,0 Q${cx},${cy} ${bx},${by}" stroke="rgba(0,0,0,0.18)" stroke-width="1.5" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  const bals=pos.map((p,i)=>{
+    const b=BALLOONS[i];
+    return `<div style="position:absolute;left:calc(50% + ${p.x}px);bottom:${-p.y-90}px;width:90px;height:110px;transform-origin:bottom center;transform:rotate(${p.rot}deg);filter:drop-shadow(0 6px 12px rgba(0,0,0,0.18));animation:balloonFloat ${p.dur}s ${p.del}s ease-in-out infinite alternate;">
+      <svg viewBox="0 0 90 110" width="90" height="110" fill="none">
+        <ellipse cx="45" cy="48" rx="35" ry="42" fill="${b.color}"/>
+        <ellipse cx="45" cy="48" rx="35" ry="42" fill="url(#bs${i})" opacity="0.38"/>
+        <ellipse cx="34" cy="28" rx="9" ry="13" fill="white" opacity="0.28" transform="rotate(-20 34 28)"/>
+        <path d="M45 90 Q43 98 45 104 Q47 98 45 90Z" fill="${b.color}" opacity="0.8"/>
+        <defs><radialGradient id="bs${i}" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stop-color="white" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="${b.shimmer}" stop-opacity="0"/>
+        </radialGradient></defs>
+        <text x="45" y="55" text-anchor="middle" font-size="20">${b.emoji}</text>
+      </svg>
+    </div>`;
+  }).join('');
+  return `
+    <div style="text-align:center;font-family:'Dancing Script',cursive;font-size:1.3rem;color:var(--primary);margin-bottom:14px;">Special memories tied up just for you 🎈</div>
+    <div class="balloon-scene">
+      <div class="scene-cloud" style="width:75px;height:26px;top:15%;animation-duration:20s;opacity:0.55;"></div>
+      <div class="scene-cloud" style="width:50px;height:18px;top:40%;animation-duration:27s;animation-delay:-10s;opacity:0.4;"></div>
+      <div class="scene-cloud" style="width:90px;height:30px;top:8%;animation-duration:34s;animation-delay:-18s;opacity:0.5;"></div>
+      <div class="balloon-bunch-wrap">
+        <svg style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);pointer-events:none;" width="500" height="290" viewBox="-250 -280 500 280">
+          ${strings}
+          <circle cx="0" cy="0" r="5" fill="rgba(0,0,0,0.22)"/>
+        </svg>
+        ${bals}
+      </div>
+    </div>
+    <div style="text-align:center;font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text2);line-height:1.9;">
+      Special memories are waiting inside the balloons.<br>Go to the 🎈 icon in the sidebar to pop them all!
+    </div>`;
+}
+
 function getGiftHTML(index){
   const td=getThemeData();
   if(index===0) return `
@@ -1043,7 +1334,9 @@ function getGiftHTML(index){
       <div class="poem-stanza">In a garden blooming just for you,<br>every flower holds a wish come true.<br>May your life be filled with colour bright,<br>and every day a pure delight. 🌸</div>
     </div>`;
 
-    if(index===6) return `
+  if(index===6) return buildBalloonSceneHTML();
+
+  if(index===7) return `
     <div style="text-align:center;font-family:'Dancing Script',cursive;font-size:1.3rem;color:var(--primary);margin-top:20px;">You have unwrapped all your gifts, now you can view your gift in the left sidebar, love you! 🎉</div>`;
 
   return '';
@@ -1084,6 +1377,12 @@ function showGiftModal(index){
     setTimeout(()=>buildGardenFlowers('modal-garden-flowers'),100);
   }
 
+  // Fly in a balloon for this gift (balloon index mirrors gift index, capped at 8)
+  if(BALLOONS.length){
+    if(!balloonInitialised) initBalloons();
+    setTimeout(()=>flyInBalloon(9), 600);
+  }
+
   unlockGift(index);
 }
 
@@ -1118,6 +1417,8 @@ function packAllGifts(){
   document.querySelectorAll('.sidebar-icon').forEach(i=>i.classList.remove('shown'));
   document.getElementById('giftboxIcon').classList.remove('visible');
   unlockedGifts=[]; allGiftsUnlocked=false;
+  // Reset balloons
+  balloonState=[]; balloonFloatOrder=[]; balloonInitialised=false;
   document.getElementById('heroPage').classList.remove('hidden');
   // Bring the open-gifts button back
   const btn = document.getElementById('heroGiftBtn');
@@ -1148,6 +1449,22 @@ function openFullpage(index){
   if(index===3){ setTimeout(()=>buildCardContent('fp-card-scene'),100); }
   if(index===4){ setTimeout(()=>buildBouquetContent('fp-bouquet-wrap'),100); }
   if(index===5){ setTimeout(()=>buildGardenFlowers('fp-garden-flowers'),100); }
+  if(index===6){
+    if(!balloonInitialised) initBalloons();
+    // Fly ALL 9 balloons up from bottom, one by one left-to-right
+    // Always runs fresh every time the page is opened
+    setTimeout(()=>{
+      BALLOONS.forEach((_,i)=>{
+        setTimeout(()=>{
+          if(!balloonFloatOrder.includes(i)) balloonFloatOrder.push(i);
+          const cell = document.getElementById('bcell-'+i);
+          if(cell && !cell.classList.contains('flown-in')){
+            requestAnimationFrame(()=>requestAnimationFrame(()=>cell.classList.add('flown-in')));
+          }
+        }, i * 200 + 100);
+      });
+    }, 120);
+  }
 }
 function closeFullpage(){
   document.querySelectorAll('.fullpage-view').forEach(v=>v.classList.remove('active'));
@@ -1180,7 +1497,245 @@ function showGoodbye(){
     if(gp.length>0)requestAnimationFrame(gTick);
   })();
 }
-function closeGoodbye(){document.getElementById('goodbyeOverlay').classList.remove('active');goodbyeShown=false; packAllGifts()}
+function closeGoodbye(){
+  document.getElementById('goodbyeOverlay').classList.remove('active');
+  goodbyeShown=false; 
+  packAllGifts();
+}
+
+// ══════════════════════════════════════════════════════
+//  BALLOON MEMORY GIFT
+// ══════════════════════════════════════════════════════
+
+// 9 balloon data — placeholder images, swap src URLs for real photos
+const BALLOONS = [
+  {
+    color:'#FF6B9D', shimmer:'#FF9EC4', emoji:'💕',
+    src:'https://placehold.co/400x400/FF6B9D/ffffff?text=Memory+1',
+    msg:'Every laugh we shared, every secret kept — this moment is one of my favourites with you.',
+    sig:'Love you always 💕'
+  },
+  {
+    color:'#A78BFA', shimmer:'#C4B5FD', emoji:'✨',
+    src:'https://placehold.co/400x400/A78BFA/ffffff?text=Memory+2',
+    msg:'You were shining so bright in this moment. This is exactly how I always see you.',
+    sig:'Your biggest fan 🌟'
+  },
+  {
+    color:'#34D399', shimmer:'#6EE7B7', emoji:'🌸',
+    src:'https://placehold.co/400x400/34D399/ffffff?text=Memory+3',
+    msg:'Some days are just magic — and this was one of them. Thank you for making it so.',
+    sig:'Grateful for you 🌿'
+  },
+  {
+    color:'#FBBF24', shimmer:'#FCD34D', emoji:'🌻',
+    src:'https://placehold.co/400x400/FBBF24/ffffff?text=Memory+4',
+    msg:'Golden, warm, and full of joy — just like you. This memory makes me smile every time.',
+    sig:'Sunshine of my life ☀️'
+  },
+  {
+    color:'#F87171', shimmer:'#FCA5A5', emoji:'🎀',
+    src:'https://placehold.co/400x400/F87171/ffffff?text=Memory+5',
+    msg:'In all of lifes moments, the ones with you are the ones I treasure most.',
+    sig:'With all my heart 🎀'
+  },
+  {
+    color:'#60A5FA', shimmer:'#93C5FD', emoji:'💙',
+    src:'https://placehold.co/400x400/60A5FA/ffffff?text=Memory+6',
+    msg:'Calm, steady, and so beautifully you. This picture captures your grace perfectly.',
+    sig:'So proud of you 💙'
+  },
+  {
+    color:'#F472B6', shimmer:'#F9A8D4', emoji:'🌺',
+    src:'https://placehold.co/400x400/F472B6/ffffff?text=Memory+7',
+    msg:'You make every ordinary moment feel like something worth remembering forever.',
+    sig:'Lucky to know you 🌺'
+  },
+  {
+    color:'#FB923C', shimmer:'#FDBA74', emoji:'🎉',
+    src:'https://placehold.co/400x400/FB923C/ffffff?text=Memory+8',
+    msg:'From all our memories together, this one holds a very special place in my heart.',
+    sig:'Cheers to you 🎉'
+  },
+  {
+    color:'#818CF8', shimmer:'#A5B4FC', emoji:'🌙',
+    src:'https://placehold.co/400x400/818CF8/ffffff?text=Memory+9',
+    msg:'Like the moon that is always there even when you cannot see it — so is my love for you.',
+    sig:'Always yours 🌙'
+  }
+];
+
+let balloonState = []; // 'floating' | 'popping' | 'popped' for each balloon
+let balloonFloatOrder = []; // order balloons were unlocked (fly in one by one)
+let balloonInitialised = false;
+
+function initBalloons(){
+  balloonState = BALLOONS.map(()=>'floating');
+  balloonFloatOrder = [];
+  balloonInitialised = true;
+  renderBalloonGrid();
+}
+
+function renderBalloonGrid(){
+  const grid = document.getElementById('balloonGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+
+  BALLOONS.forEach((b, i)=>{
+    const cell = document.createElement('div');
+    cell.className = 'balloon-cell';
+    cell.id = 'bcell-' + i;
+    cell.style.setProperty('--float-dur', (2.8 + i*0.22) + 's');
+    cell.style.setProperty('--float-delay', (i*0.15) + 's');
+
+    if(balloonState[i] === 'floating'){
+      // Always hidden at first — stagger fly-in happens in openFullpage(6)
+      cell.innerHTML = makeBalloonSVG(b, i);
+      cell.onclick = () => popBalloon(i);
+    } else if(balloonState[i] === 'popped'){
+      // Popped cards show immediately (no re-entry animation)
+      cell.classList.add('flown-in','is-popped');
+      cell.innerHTML = makePhotoCard(b, i);
+    }
+
+    grid.appendChild(cell);
+  });
+
+  checkAllPopped();
+}
+
+function makeBalloonSVG(b, i){
+  return `<div class="balloon-fly">
+    <div class="balloon-body">
+      <svg class="balloon-svg" viewBox="0 0 90 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="45" cy="48" rx="35" ry="42" fill="${b.color}"/>
+        <ellipse cx="45" cy="48" rx="35" ry="42" fill="url(#shim${i})" opacity="0.35"/>
+        <ellipse cx="34" cy="28" rx="9" ry="13" fill="white" opacity="0.28" transform="rotate(-20 34 28)"/>
+        <path d="M45 90 Q43 98 45 104 Q47 98 45 90Z" fill="${b.color}" opacity="0.8"/>
+        <defs>
+          <radialGradient id="shim${i}" cx="35%" cy="30%" r="65%">
+            <stop offset="0%" stop-color="white" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="${b.shimmer}" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <text x="45" y="55" text-anchor="middle" font-size="22" font-family="serif">${b.emoji}</text>
+      </svg>
+    </div>
+    <div class="balloon-string"></div>
+    <div class="balloon-label">Tap to pop!</div>
+  </div>`;
+}
+
+function makePhotoCard(b, i){
+  return `<div class="balloon-fly">
+    <div class="balloon-photo-card" id="bpc-${i}" onclick="flipPhotoCard(${i})">
+      <div class="bpc-inner">
+        <div class="bpc-front">
+          <img src="${b.src}" alt="Memory ${i+1}" loading="lazy"/>
+          <div class="bpc-front-overlay"><span>tap to read 💕</span></div>
+        </div>
+        <div class="bpc-back">
+          <div class="bpc-back-emoji">${b.emoji}</div>
+          <div class="bpc-back-msg">${b.msg}</div>
+          <div class="bpc-back-sig">${b.sig}</div>
+        </div>
+      </div>
+      <div class="bpc-hint">tap to flip</div>
+    </div>
+  </div>`;
+}
+
+function flipPhotoCard(i){
+  const card = document.getElementById('bpc-' + i);
+  if(card) card.classList.toggle('flipped');
+}
+
+function popBalloon(i){
+  if(balloonState[i] !== 'floating') return;
+  balloonState[i] = 'popping';
+
+  // Spawn pop particles at balloon position
+  const cell = document.getElementById('bcell-' + i);
+  if(cell){
+    const rect = cell.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/3;
+    spawnPopParticles(cx, cy, BALLOONS[i].color);
+  }
+
+  // Animate balloon out, then replace with photo card
+  const bodyEl = cell ? cell.querySelector('.balloon-body') : null;
+  if(bodyEl) bodyEl.style.animation = 'balloonPop 0.35s forwards cubic-bezier(0.36,0.07,0.19,0.97)';
+
+  setTimeout(()=>{
+    balloonState[i] = 'popped';
+    if(cell){
+      cell.classList.add('is-popped');
+      cell.onclick = null;
+      cell.innerHTML = makePhotoCard(BALLOONS[i], i);
+      // Animate card in with a quick scale-up
+      requestAnimationFrame(()=>requestAnimationFrame(()=>cell.classList.add('flown-in')));
+      // Animate card in
+      const pc = cell.querySelector('.balloon-photo-card');
+      if(pc){ pc.style.opacity='0'; pc.style.transform='scale(0.7)'; pc.style.transition='opacity 0.4s,transform 0.4s'; requestAnimationFrame(()=>{ pc.style.opacity='1'; pc.style.transform='scale(1)'; }); }
+    }
+    checkAllPopped();
+  }, 370);
+}
+
+function spawnPopParticles(cx, cy, color){
+  const colors = [color, '#fff', '#FFD700', '#FF69B4', '#fff'];
+  for(let i=0;i<14;i++){
+    const el = document.createElement('div');
+    el.className = 'pop-particle';
+    const size = Math.random()*10+6;
+    const angle = Math.random()*Math.PI*2;
+    const dist = Math.random()*80+40;
+    el.style.cssText = `
+      width:${size}px;height:${size}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      left:${cx}px;top:${cy}px;
+      --tx:${Math.cos(angle)*dist}px;
+      --ty:${Math.sin(angle)*dist}px;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 800);
+  }
+}
+
+function flyInBalloon(index){
+  if(!balloonFloatOrder.includes(index)) balloonFloatOrder.push(index);
+  const cell=document.getElementById('bcell-'+index);
+  if(cell && balloonState[index]==='floating'){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>cell.classList.add('flown-in')));
+  }
+}
+
+function checkAllPopped(){
+  const allPopped = balloonState.every(s => s === 'popped');
+  const msg = document.getElementById('allPoppedMsg');
+  if(msg){
+    if(allPopped) msg.classList.add('show');
+    else msg.classList.remove('show');
+  }
+}
+
+// Lightbox for popped photos
+function openLightbox(i){
+  const b = BALLOONS[i];
+  const lb = document.getElementById('balloonLightbox');
+  document.getElementById('blbInner').innerHTML = `
+    <img class="blb-img" src="${b.src}" alt="Memory ${i+1}"/>
+    <div class="blb-content">
+      <div class="blb-emoji">${b.emoji}</div>
+      <div class="blb-msg">${b.msg}</div>
+      <div class="blb-sig">${b.sig}</div>
+    </div>`;
+  lb.classList.add('active');
+}
+function closeLightbox(){
+  document.getElementById('balloonLightbox').classList.remove('active');
+}
 
 // ══════════════════════════════════════════════════════
 //  LEAVE CONFIRM + GOODBYE FLOW
@@ -1290,7 +1845,7 @@ window.addEventListener('pagehide',()=>{
 //  Set your sister's birthday in BOTH calendars below.
 //  Month is 1-based (1 = January for AD, 1 = Baisakh for BS)
 // ══════════════════════════════════════════════════════════════════
-const BIRTHDAY_AD = { month: 3, day: 16 };   
+const BIRTHDAY_AD = { month: 3, day: 8 };   
 const BIRTHDAY_BS = { month: 12, day: 2 };   
 
 // Birthday window: how many hours the birthday page stays open (default 24h)

@@ -535,6 +535,92 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
   100%{transform:scale(0) translate(var(--tx),var(--ty));opacity:0;}
 }
 
+/* ── Balloon expand/focus state ── */
+/* Dim grid when a photo is focused */
+.balloon-grid.has-focus .balloon-cell:not(.focused){
+  opacity:0.18;
+  pointer-events:none;
+  transition:opacity 0.35s;
+}
+
+/* ── Photo expand overlay — fixed, always centred ── */
+#balloonExpandOverlay{
+  position:fixed;inset:0;z-index:3500;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,0.72);backdrop-filter:blur(14px);
+  opacity:0;pointer-events:none;
+  transition:opacity 0.35s;
+}
+#balloonExpandOverlay.active{opacity:1;pointer-events:all;}
+
+.beo-card{
+  position:relative;
+  width:min(460px,92vw);
+  perspective:1000px;
+}
+.beo-inner{
+  width:100%;
+  height:min(520px,80vh);
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform 0.7s cubic-bezier(0.645,0.045,0.355,1);
+}
+.beo-card.flipped .beo-inner{transform:rotateY(180deg);}
+
+.beo-front,.beo-back{
+  position:absolute;inset:0;
+  border-radius:22px;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  overflow:hidden;
+  box-shadow:0 28px 80px rgba(0,0,0,0.5);
+}
+.beo-front{background:#111;}
+.beo-front img{
+  width:100%;height:100%;object-fit:cover;display:block;border-radius:22px;
+}
+.beo-front-hint{
+  position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);
+  color:rgba(255,255,255,0.85);font-family:'DM Sans',sans-serif;
+  font-size:11px;letter-spacing:0.15em;text-transform:uppercase;
+  padding:7px 18px;border-radius:50px;white-space:nowrap;
+  pointer-events:none;
+}
+.beo-back{
+  background:radial-gradient(ellipse at 30% 30%,var(--bg2),var(--bg));
+  border:2px solid var(--secondary);
+  transform:rotateY(180deg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 28px;text-align:center;gap:12px;
+}
+.beo-back-emoji{font-size:2.2rem;}
+.beo-back-msg{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.08rem;line-height:1.85;color:var(--text2);
+}
+.beo-back-sig{
+  font-family:'Dancing Script',cursive;font-size:1.25rem;color:var(--primary);
+}
+.beo-back-hint{
+  font-size:10px;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--text2);opacity:0.5;margin-top:8px;
+}
+.beo-close{
+  position:absolute;top:-14px;right:-14px;
+  width:34px;height:34px;border-radius:50%;
+  background:var(--primary);color:#fff;border:none;
+  font-size:0.9rem;cursor:pointer;z-index:1;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.2s;
+}
+.beo-close:hover{transform:scale(1.12);}
+
+/* Hint text on small cards */
+.balloon-photo-card .bpc-hint{transition:opacity 0.3s;}
+
 /* All popped message */
 .all-popped-msg{
   display:none;text-align:center;margin-top:32px;
@@ -917,6 +1003,25 @@ body{width:100%;min-height:100%;font-family:'DM Sans',sans-serif;background:var(
         <div style="font-size:2.5rem;margin-bottom:10px;">🎉</div>
         <div style="font-family:'Great Vibes',cursive;font-size:2rem;color:var(--primary);">All memories revealed!</div>
         <div style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--text2);margin-top:8px;">Click the photo to view it up close 💕</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Balloon expand overlay -->
+<div id="balloonExpandOverlay" onclick="if(event.target===this)collapsePhoto();">
+  <div class="beo-card" id="beoCard">
+    <button class="beo-close" onclick="collapsePhoto()">✕</button>
+    <div class="beo-inner" id="beoInner">
+      <div class="beo-front" id="beoFront">
+        <img id="beoImg" src="" alt="Memory"/>
+        <div class="beo-front-hint" id="beoFrontHint">tap to read the note 💕</div>
+      </div>
+      <div class="beo-back" id="beoBack">
+        <div class="beo-back-emoji" id="beoEmoji"></div>
+        <div class="beo-back-msg" id="beoMsg"></div>
+        <div class="beo-back-sig" id="beoSig"></div>
+        <div class="beo-back-hint">tap to close 🌸</div>
       </div>
     </div>
   </div>
@@ -1477,6 +1582,8 @@ function openFullpage(index){
 function closeFullpage(){
   document.querySelectorAll('.fullpage-view').forEach(v=>v.classList.remove('active'));
   currentFullpage=-1;
+  // Close balloon expand overlay if open
+  if(focusedBalloon >= 0) collapsePhoto();
 }
 
 // (card flip handled inside buildCardContent)
@@ -1507,8 +1614,37 @@ function showGoodbye(){
 }
 function closeGoodbye(){
   document.getElementById('goodbyeOverlay').classList.remove('active');
-  goodbyeShown=false; 
-  packAllGifts();
+  goodbyeShown=false;
+  resumeFromGoodbye();
+}
+
+function resumeFromGoodbye(){
+  // Restore sidebar icons for all unlocked gifts
+  unlockedGifts.forEach(idx=>{
+    const icon = document.getElementById('si-'+idx);
+    if(icon) icon.classList.add('shown');
+  });
+  // Restore pack button if all gifts were unlocked
+  if(allGiftsUnlocked){
+    document.getElementById('giftboxIcon').classList.add('visible');
+  }
+  // Restore hero page visibility
+  document.getElementById('heroPage').classList.remove('hidden');
+  const btn = document.getElementById('heroGiftBtn');
+  if(btn && unlockedGifts.length === 0){
+    btn.style.display=''; setTimeout(()=>btn.style.opacity='1',50);
+  }
+  // Resume where she was
+  if(currentFullpage >= 0){
+    // Was in a fullpage view — reopen it
+    openFullpage(currentFullpage);
+  } else if(document.getElementById('giftOverlay').classList.contains('active')){
+    // Gift modal was open — it's still open, nothing to do
+  } else if(unlockedGifts.length > 0 && currentGift >= 0){
+    // Was in the middle of unboxing — reopen the gift modal
+    showGiftModal(currentGift);
+  }
+  // Otherwise just the hero page shows — that's fine
 }
 
 // ══════════════════════════════════════════════════════
@@ -1519,57 +1655,57 @@ function closeGoodbye(){
 const BALLOONS = [
   {
     color:'#FF6B9D', shimmer:'#FF9EC4', emoji:'💕',
-    src:'https://placehold.co/400x400/FF6B9D/ffffff?text=Memory+1',
-    msg:'Every laugh we shared, every secret kept — this moment is one of my favourites with you.',
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/20160518_061904.jpg',
+    msg:'18 may 2016, when you became a inseparable part of my life.',
     sig:'Love you always 💕'
   },
   {
     color:'#A78BFA', shimmer:'#C4B5FD', emoji:'✨',
-    src:'https://placehold.co/400x400/A78BFA/ffffff?text=Memory+2',
-    msg:'You were shining so bright in this moment. This is exactly how I always see you.',
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/Messenger_creation_F2ACCBDE-F005-4BC6-888C-A5685FE11090.jpeg',
+    msg:'Even camera cannot capture your beauty thats how beautiful you are',
     sig:'Your biggest fan 🌟'
   },
   {
     color:'#34D399', shimmer:'#6EE7B7', emoji:'🌸',
-    src:'https://placehold.co/400x400/34D399/ffffff?text=Memory+3',
-    msg:'Some days are just magic — and this was one of them. Thank you for making it so.',
-    sig:'Grateful for you 🌿'
+    src:'https://github.com/shuvamd5/Birthday/blob/b257283fab432dc6fe40b7129e1c9f76320d06e1/images/Snapchat-1775614478.jpg',
+    msg:'From simple to classic, cute to elegant, you can pull off every look with such grace and charm.',
+    sig:'Love every version of you 🌿'
   },
   {
     color:'#FBBF24', shimmer:'#FCD34D', emoji:'🌻',
-    src:'https://placehold.co/400x400/FBBF24/ffffff?text=Memory+4',
-    msg:'Golden, warm, and full of joy — just like you. This memory makes me smile every time.',
-    sig:'Sunshine of my life ☀️'
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/Messenger_creation_ea32b5bc-f9ea-433e-86dd-c5040f49db18.jpeg',
+    msg:'Your smile are the most beautiful, warmest and full of joy, makes me smile every time.',
+    sig:'My sweet Sunshine ☀️'
   },
   {
     color:'#F87171', shimmer:'#FCA5A5', emoji:'🎀',
-    src:'https://placehold.co/400x400/F87171/ffffff?text=Memory+5',
-    msg:'In all of lifes moments, the ones with you are the ones I treasure most.',
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/IMG_20181031_191834.jpg',
+    msg:'Throughout my lifes, the moments with you are the most precious and the ones I treasure the most.',
     sig:'With all my heart 🎀'
   },
   {
     color:'#60A5FA', shimmer:'#93C5FD', emoji:'💙',
-    src:'https://placehold.co/400x400/60A5FA/ffffff?text=Memory+6',
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/att.bYs30ubMP2i3AMC0ezrOjSqyNvCuKuk_5eqq9l17CDE.jpg.jpeg',
     msg:'Calm, steady, and so beautifully you. This picture captures your grace perfectly.',
-    sig:'So proud of you 💙'
+    sig:'So proud of my beautiful sister 💙'
   },
   {
     color:'#F472B6', shimmer:'#F9A8D4', emoji:'🌺',
-    src:'https://placehold.co/400x400/F472B6/ffffff?text=Memory+7',
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/20160521_174636.jpg',
     msg:'You make every ordinary moment feel like something worth remembering forever.',
-    sig:'Lucky to know you 🌺'
+    sig:'Lucky to have you in my life 🌺'
   },
   {
     color:'#FB923C', shimmer:'#FDBA74', emoji:'🎉',
-    src:'https://placehold.co/400x400/FB923C/ffffff?text=Memory+8',
-    msg:'From all our memories together, this one holds a very special place in my heart.',
-    sig:'Cheers to you 🎉'
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/Messenger_creation_a19ed301-859f-44e7-972a-85f2220fc3ee.jpeg',
+    msg:'How fast you grew from this little cute girl to this amazing and beautiful person you are now.',
+    sig:'Cheers to your growth and future ahead 🎉'
   },
   {
     color:'#818CF8', shimmer:'#A5B4FC', emoji:'🌙',
-    src:'https://placehold.co/400x400/818CF8/ffffff?text=Memory+9',
-    msg:'Like the moon that is always there even when you cannot see it — so is my love for you.',
-    sig:'Always yours 🌙'
+    src:'https://github.com/shuvamd5/Birthday/blob/b10550dde6ee1ad20d37e82a08539bdc6d276926/images/Snapchat-1511753513.jpg',
+    msg:'Like the moon whose beauty cannot be compared with the millions of stars, so is yours',
+    sig:'Always my beautiful moon 🌙'
   }
 ];
 
@@ -1636,11 +1772,11 @@ function makeBalloonSVG(b, i){
 
 function makePhotoCard(b, i){
   return `<div class="balloon-fly">
-    <div class="balloon-photo-card" id="bpc-${i}" onclick="flipPhotoCard(${i})">
+    <div class="balloon-photo-card" id="bpc-${i}" onclick="handlePhotoClick(${i})">
       <div class="bpc-inner">
         <div class="bpc-front">
           <img src="${b.src}" alt="Memory ${i+1}" loading="lazy"/>
-          <div class="bpc-front-overlay"><span>tap to read 💕</span></div>
+          <div class="bpc-front-overlay"><span>tap to view 💕</span></div>
         </div>
         <div class="bpc-back">
           <div class="bpc-back-emoji">${b.emoji}</div>
@@ -1648,14 +1784,64 @@ function makePhotoCard(b, i){
           <div class="bpc-back-sig">${b.sig}</div>
         </div>
       </div>
-      <div class="bpc-hint">tap to flip</div>
+      <div class="bpc-hint">tap to view 💕</div>
     </div>
   </div>`;
 }
 
-function flipPhotoCard(i){
-  const card = document.getElementById('bpc-' + i);
-  if(card) card.classList.toggle('flipped');
+// 3-click balloon photo cycle:
+// click 1 → expand (focus this, fade others)
+// click 2 → flip to show note
+// click 3 → collapse back, restore all
+let focusedBalloon = -1;
+
+function handlePhotoClick(i){
+  const b = BALLOONS[i];
+  const grid = document.getElementById('balloonGrid');
+  const cell = document.getElementById('bcell-' + i);
+  if(!grid || !cell) return;
+
+  // CLICK 1 — open the fixed centred overlay with this photo
+  focusedBalloon = i;
+  grid.classList.add('has-focus');
+  cell.classList.add('focused');
+
+  // Populate overlay
+  document.getElementById('beoImg').src = b.src;
+  document.getElementById('beoEmoji').textContent = b.emoji;
+  document.getElementById('beoMsg').textContent = b.msg;
+  document.getElementById('beoSig').textContent = b.sig;
+
+  // Reset to front face
+  const card = document.getElementById('beoCard');
+  
+
+  // Show overlay
+  const overlay = document.getElementById('balloonExpandOverlay');
+  overlay.classList.add('active');
+
+  // Click on the overlay card cycles front → back → close
+  card.onclick = function(e){
+    if(e.target.closest('.beo-close')) return; // handled by collapsePhoto()
+    if(!card.classList.contains('flipped')){
+      // CLICK 2 — flip to note
+      card.classList.add('flipped');
+    } else {
+      // CLICK 3 — close
+      card.classList.remove('flipped');
+      collapsePhoto();
+    }
+  };
+}
+
+function collapsePhoto(){
+  const overlay = document.getElementById('balloonExpandOverlay');
+  overlay.classList.remove('active');
+  const grid = document.getElementById('balloonGrid');
+  if(grid) grid.classList.remove('has-focus');
+  const cell = focusedBalloon >= 0 ? document.getElementById('bcell-'+focusedBalloon) : null;
+  if(cell) cell.classList.remove('focused');
+  focusedBalloon = -1;
 }
 
 function popBalloon(i){
@@ -1853,7 +2039,7 @@ window.addEventListener('pagehide',()=>{
 //  Set your sister's birthday in BOTH calendars below.
 //  Month is 1-based (1 = January for AD, 1 = Baisakh for BS)
 // ══════════════════════════════════════════════════════════════════
-const BIRTHDAY_AD = { month: 3, day: 16 };   
+const BIRTHDAY_AD = { month: 3, day: 14 };   
 const BIRTHDAY_BS = { month: 12, day: 2 };   
 
 // Birthday window: how many hours the birthday page stays open (default 24h)

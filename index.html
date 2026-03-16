@@ -414,7 +414,7 @@ function buildTimeline(){
     display.forEach((node,colIdx)=>{
       const isClickable=!!node.file && node.unlocked;
       const emoji=node.type==='past'?(node.unlocked?'🎁':'🔒'):node.type==='current'?'🎀':'✨';
-      const subLabel=node.type==='past'?(node.unlocked?'Birthday gifts':'Not yet 🌸'):node.type==='current'?'This birthday ✨':'Coming soon';
+      const subLabel=node.type==='past'?(node.unlocked?`Open ${node.bsYear} gifts`:'Not yet 🌸'):node.type==='current'?'Upcoming birthday ✨':'Coming soon';
       const giftBtn=isClickable?`<button class="tl-node-gift-btn" onclick="openGiftYear('${node.file}')">Open gifts →</button>`:'';
       const dotClick=isClickable?` onclick="openGiftYear('${node.file}')" style="cursor:pointer;"`:` style="cursor:default;"`;
 
@@ -422,7 +422,7 @@ function buildTimeline(){
       nodeDiv.className=`tl-node ${node.type==='past'&&!node.unlocked?'future':node.type}`;
       nodeDiv.innerHTML=`
         <div class="tl-node-dot"${dotClick}>${emoji}</div>
-        <div class="tl-node-year">${node.adYear}<br><span style="opacity:0.45;font-size:0.8em;">BS ${node.bsYear}</span></div>
+        <div class="tl-node-year">${node.bsYear}<br><span style="opacity:0.45;font-size:0.8em;">AD ${node.adYear}</span></div>
         <div class="tl-node-sub">${subLabel}</div>
         ${giftBtn}`;
       rowDiv.appendChild(nodeDiv);
